@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Salary Statement</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: url("https://www.trymintly.com/_next/image?url=https%3A%2F%2Fwww.blog1.trymintly.com%2F%2Fall-about-the-format-of-salary-slip%2Fpexels-tima-miroshnichenko-6693655_11zon%2F&w=3840&q=75")
+          no-repeat center center fixed;
+        background-size: cover;
+        margin: 0;
+        padding: 20px;
+        color: #333;
+      }
+      .container {
+        max-width: 800px;
+        margin: auto;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 1s ease-in-out;
+      }
+      .header {
+        text-align: center;
+        border-bottom: 4px solid #4caf50;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+        color: #4caf50;
+        text-transform: uppercase;
+      }
+      .header h2,
+      .header h3 {
+        margin: 5px 0;
+        font-size: 16px;
+        color: #555;
+      }
+      .details,
+      .salary-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+      .details td,
+      .salary-table td,
+      .salary-table th {
+        border: 1px solid #ddd;
+        padding: 10px;
+      }
+      .details tr:nth-child(even),
+      .salary-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      .details tr:hover,
+      .salary-table tr:hover {
+        background-color: #f1f1f1;
+      }
+      .details th,
+      .salary-table th {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        text-align: left;
+        background-color: #4caf50;
+        color: white;
+      }
+      .authorized-signatory {
+        margin-top: 20px;
+        text-align: center;
+        font-weight: bold;
+      }
+      .contact {
+        font-size: 14px;
+        color: #555;
+        text-align: center;
+        margin-top: 20px;
+      }
+      .button {
+        display: inline-block;
+        padding: 10px 20px;
+        margin: 10px 5px;
+        font-size: 14px;
+        cursor: pointer;
+        border-radius: 5px;
+        text-decoration: none;
+        color: white;
+        background-color: #4caf50;
+        border: none;
+        transition: background-color 0.3s ease;
+      }
+      .button:hover {
+        background-color: #45a049;
+      }
+      #payslipContainer {
+        margin-top: 20px;
+      }
+      .title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #4caf50;
+        text-transform: uppercase;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .sub-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .heading {
+        font-size: 16px;
+        font-weight: bold;
+        color: #444;
+        text-align: left;
+        margin-bottom: 10px;
+      }
+      .file-upload {
+        position: relative;
+        display: inline-block;
+        overflow: hidden;
+        margin-bottom: 10px;
+      }
+      .file-upload input[type="file"] {
+        position: absolute;
+        top: 0;
+        right: 0;
+        margin: 0;
+        padding: 0;
+        font-size: 20px;
+        cursor: pointer;
+        opacity: 0;
+        filter: alpha(opacity=0);
+      }
+      .file-upload-button {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 14px;
+        cursor: pointer;
+        border-radius: 5px;
+        text-decoration: none;
+        color: white;
+        background-color: #4caf50;
+        border: none;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+      }
+      .file-upload-button:hover {
+        background-color: #45a049;
+        transform: scale(1.05);
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .button {
+        display: inline-block;
+        padding: 10px 20px;
+        margin: 10px 5px;
+        font-size: 14px;
+        cursor: pointer;
+        border-radius: 5px;
+        text-decoration: none;
+        color: white;
+        background-color: #4caf50;
+        border: none;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+      }
+
+      .button:hover {
+        background-color: #45a049;
+        transform: scale(1.05);
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="title">Upload Excel File and Generate Payslip</h1>
+      <div class="file-upload">
+        <button class="file-upload-button">Choose File</button>
+        <input type="file" id="fileUpload" accept=".xlsx" />
+      </div>
+      <br />
+      <label for="employeeId" class="heading">Enter Employee ID:</label>
+      <input type="text" id="employeeId" />
+      <button class="button" onclick="generatePayslip()">
+        Generate Payslip
+      </button>
+      <br /><br />
+      <div id="payslipContainer"></div>
+    </div>
+
+    <script>
+      let employeeData = {};
+
+      document
+        .getElementById("fileUpload")
+        .addEventListener("change", function (event) {
+          const file = event.target.files[0];
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = XLSX.utils.sheet_to_json(
+              workbook.Sheets[sheetName]
+            );
+
+            worksheet.forEach((row) => {
+              employeeData[row["Employee ID"]] = row;
+            });
+            alert("File successfully uploaded and processed!");
+          };
+          reader.readAsArrayBuffer(file);
+        });
+
+      function formatDate(dateString) {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        return isNaN(date.getTime()) ? "" : date.toLocaleDateString("en-GB");
+      }
+
+      function generatePayslip() {
+        const employeeId = document.getElementById("employeeId").value;
+        const employee = employeeData[employeeId];
+
+        if (employee) {
+          const payslipHTML = `
+            <div class="container" id="payslip">
+              <div class="header">
+                <h1>SYMBIOSYS TECHNOLOGIES</h1>
+                <h2>
+                  Plot No 1 & 2, Hill no-2, IT Park,<br />
+                  Rushikonda, Visakhapatnam-45<br />
+                  Ph: 2550369, 2596567
+                </h2>
+                <h3>SALARY STATEMENT FOR THE MONTH OF MAY 2024</h3>
+              </div>
+              <table class="details">
+                <tr>
+                  <th>Employee Code</th>
+                  <td>${employee["Employee ID"] || ""}</td>
+                  <th>Date of Joining</th>
+                  <td>${formatDate(employee["Date of Joining"])}</td>
+                </tr>
+                <tr>
+                  <th>Employee Name</th>
+                  <td>${employee["Employee Name"] || ""}</td>
+                  <th>Employment Status</th>
+                  <td>${employee["Employment status"] || ""}</td>
+                </tr>
+                <tr>
+                  <th>Designation</th>
+                  <td>${employee["Designation"] || ""}</td>
+                  <th>Statement for the month</th>
+                  <td>${employee["Statement for the month"] || ""}</td>
+                </tr>
+              </table>
+              <table class="salary-table">
+                <tr>
+                  <th>Classified Income</th>
+                  <th>Amount (Rs.)</th>
+                  <th>Deductions</th>
+                  <th>Amount (Rs.)</th>
+                </tr>
+                <tr>
+                  <td>Basic Pay</td>
+                  <td>${employee["Basic Pay"] || "0.00"}</td>
+                  <td>Professional Tax</td>
+                  <td>${employee["Professional Tax"] || "0.00"}</td>
+                </tr>
+                <tr>
+                  <td>House Rent Allowance</td>
+                  <td>${employee["House Rent Allowance"] || "0.00"}</td>
+                  <td>Income Tax</td>
+                  <td>${employee["Income Tax"] || "0.00"}</td>
+                </tr>
+                <tr>
+                  <td>City Compensatory Allowance</td>
+                  <td>${employee["City Compensatory Allowance"] || "0.00"}</td>
+                  <td>Provident Fund</td>
+                  <td>${employee["Provident Fund"] || "0.00"}</td>
+                </tr>
+                <tr>
+                  <td>Travel Allowance</td>
+                  <td>${employee["Travel Allowance"] || "0.00"}</td>
+                  <td>ESI</td>
+                  <td>${employee["ESI"] || "0.00"}</td>
+                </tr>
+                <tr>
+                  <td>Food Allowance</td>
+                  <td>${employee["Food Allowance"] || "0.00"}</td>
+                  <td>Leaves - Loss of Pay</td>
+                  <td>${employee["Leaves - Loss of Pay"] || "0.00"}</td>
+                </tr>
+                <tr>
+                  <td>Performance Incentives</td>
+                  <td>${employee["Performance Incentives"] || "0.00"}</td>
+                  <td>Others</td>
+                  <td>${employee["Others"] || "0.00"}</td>
+                </tr>
+              </table>
+              <table class="salary-table">
+                <tr>
+                  <th>Gross Pay</th>
+                  <td>${employee["GROSS PAY"] || "0.00"}</td>
+                  <th>Deductions</th>
+                  <td>${employee["DEDUCTIONS"] || "0.00"}</td>
+                  <th>Net Pay</th>
+                  <td>${employee["NET PAY"] || "0.00"}</td>
+                </tr>
+              </table>
+              <div class="authorized-signatory">
+                <p>AUTHORIZED SIGNATORY</p>
+                <p>Sudheer<br />H.R Executive</p>
+              </div>
+              <div class="contact">
+                <p>
+                  We request you to verify employment details with our office on
+                  email: hr@symbiosystech.com. (+91-0891-2550369)
+                </p>
+              </div>
+              <button class="button" onclick="printPayslip()">Print</button>
+              <button class="button" onclick="downloadPayslip()">Download</button>
+            </div>
+          `;
+          document.getElementById("payslipContainer").innerHTML = payslipHTML;
+        } else {
+          alert("Employee ID not found!");
+        }
+      }
+
+      function printPayslip() {
+        const payslip = document.getElementById("payslip").innerHTML;
+        const originalContent = document.body.innerHTML;
+        document.body.innerHTML = payslip;
+        window.print();
+        document.body.innerHTML = originalContent;
+        window.location.reload();
+      }
+
+      function downloadPayslip() {
+        const element = document.createElement("a");
+        const payslip = document.getElementById("payslip").innerHTML;
+        const blob = new Blob([payslip], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
+        element.href = url;
+        element.download = "payslip.html";
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+      }
+    </script>
+  </body>
+</html>
